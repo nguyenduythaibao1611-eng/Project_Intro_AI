@@ -1,0 +1,4 @@
+# Minimal environment for Minh's preprocessing task (no GPU dependencies).
+pandas==2.3.3
+scikit-learn==1.9.1
+pyvi==0.1.1

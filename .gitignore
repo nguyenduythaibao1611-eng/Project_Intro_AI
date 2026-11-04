@@ -51,3 +51,12 @@ desktop.ini
 *.onnx
 checkpoints/
 trained_models/
+
+# Generated review datasets and audit reports stay local. Rebuild with
+# python -m src.preprocess && python scripts/report_preprocessing.py
+/data/processed/train.csv
+/data/processed/val.csv
+/data/processed/test.csv
+/data/processed/excluded_rows.csv
+/data/processed/preprocessing_audit.json
+/docs/MINH_WEEK3_PREPROCESSING_REPORT.md

@@ -81,7 +81,25 @@ venv\Scripts\activate      # Windows
 pip install -r requirements.txt
 ```
 
-### Chạy Thực nghiệm Notebooks
+### Pipeline tiền xử lý Tuần 3 (Đặng Đức Minh)
+
+Chạy `python -m src.preprocess` từ thư mục gốc để tạo `train.csv`, `val.csv`,
+`test.csv` với cột `processed_content` và `label_id` dùng chung cho các mô hình.
+Xem [script tạo báo cáo tiền xử lý và nội dung slide của Minh](scripts/report_preprocessing.py).
+CSV và báo cáo được tạo cục bộ, không đưa vào Git. Để chạy riêng phần tiền xử lý:
+
+```bash
+python -m pip install -r requirements-preprocess.txt
+python -m unittest discover -s tests -v
+python -m src.preprocess
+python scripts/report_preprocessing.py
+```
+
+Báo cáo được xuất vào `docs/MINH_WEEK3_PREPROCESSING_REPORT.md`, gồm độ bao phủ
+từ vựng train/validation/test, kiểm tra trùng nội dung, số liệu thực tế và lời thuyết trình.
+Các review giống nhau sau xử lý được giữ trong cùng một tập; tỷ lệ chia xấp xỉ 70/15/15.
+
+### Chạy notebook
 ```bash
 # Khởi động Jupyter Notebook
 jupyter notebook
