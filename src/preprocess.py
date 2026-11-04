@@ -103,6 +103,17 @@ TEENCODE_DICT: Dict[str, str] = {
     "rat": "rất", "cx": "cũng", "cug": "cũng", "cũg": "cũng",
     "vẫn ch": "vẫn chưa", "ch": "chưa", "thik": "thích", "thich": "thích",
     "thjk": "thích", "iu": "yêu", "yeu": "yêu",
+    # Chuẩn hóa từ lóng biểu đạt cảm xúc mạnh, chê bai, chửi bậy viết tắt trên TMĐT (Shopee Profanity & Negative Slang)
+    "vcl": "rất", "vkl": "rất", "vlon": "rất", "vlin": "rất", "vcc": "rất", "vl": "rất",
+    "như c": "rất tệ", "nhu c": "rất tệ", "như cc": "rất tệ", "nhu cc": "rất tệ",
+    "như cl": "rất tệ", "nhu cl": "rất tệ", "như l": "rất tệ", "nhu l": "rất tệ",
+    "như lol": "rất tệ", "nhu lol": "rất tệ", "như hạch": "rất tệ", "nhu hach": "rất tệ",
+    "đm": "tệ", "dm": "tệ", "dkm": "tệ", "đkm": "tệ", "đmm": "tệ", "dmm": "tệ",
+    "đcm": "tệ", "dcm": "tệ", "cl": "tệ", "củ l": "tệ",
+    "cac": "tệ", "cặc": "tệ", "cak": "tệ", "cặk": "tệ", "lồn": "tệ", "lon": "tệ",
+    "lừa đảo": "lừa đảo", "lua dao": "lừa đảo", "luadao": "lừa đảo", "lđ": "lừa đảo",
+    "lởm": "kém chất lượng", "lom": "kém chất lượng", "dỏm": "kém chất lượng", "dom": "kém chất lượng",
+    "hãm": "tệ", "ham": "tệ", "bực": "bực mình", "buc": "bực mình",
 }
 # Defined for team compatibility. Removal is intentionally disabled: short review
 # particles, intensifiers and negations can carry sentiment.
@@ -117,6 +128,7 @@ _TOKENS = re.compile(r"[^\W_]+(?:_[^\W_]+)*", re.UNICODE)
 DOMAIN_COMPOUNDS = {phrase: phrase.replace(" ", "_") for phrase in (
     "sản phẩm", "giao hàng", "chất lượng", "hài lòng", "thất vọng", "cửa hàng",
     "chính hãng", "đóng gói", "phản hồi", "trả lời", "bảo hành", "đổi trả",
+    "rất tệ", "kém chất lượng", "lừa đảo", "bực mình",
 )}
 
 
