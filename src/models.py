@@ -11,7 +11,8 @@ Tệp mã nguồn cung cấp các kiến trúc mạng nơ-ron:
 2. compute_class_weights & get_weighted_criterion: Tính trọng số nghịch đảo tần suất lớp (w_c = N / (K * N_c))
    để phục vụ Weighted Cross-Entropy Loss giải quyết câu hỏi nghiên cứu RQ3.
 3. PhoBERTClassifier: Kiến trúc mô hình Transformer tinh chỉnh (Fine-tuning) dựa trên VinAI PhoBERT.
-4. Các hàm tiện ích huấn luyện (train_one_epoch, evaluate_model, predict_sentence).
+4. get_phobert_optimizer_and_scheduler: Khởi tạo tối ưu hóa phân tầng (AdamW) & Linear Warmup Scheduler.
+5. Các hàm tiện ích huấn luyện (train_one_epoch, evaluate_model, save_checkpoint, load_checkpoint).
 """
 
 from __future__ import annotations
@@ -269,6 +270,101 @@ class PhoBERTClassifier(nn.Module):
         logits = self.classifier(self.dropout(cls_repr))
         return logits
 
+    def predict_proba(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+        token_type_ids: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """Tính toán phân phối xác suất dự đoán (Softmax probabilities)."""
+        self.eval()
+        with torch.no_grad():
+            logits = self.forward(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+            probs = F.softmax(logits, dim=-1)
+        return probs
+
+    def predict(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+        token_type_ids: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """Dự đoán nhãn cảm xúc cụ thể (Argmax class ID)."""
+        probs = self.predict_proba(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+        return torch.argmax(probs, dim=-1)
+
+
+def get_phobert_optimizer_and_scheduler(
+    model: PhoBERTClassifier,
+    total_steps: int,
+    lr_backbone: float = 2e-5,
+    lr_head: float = 1e-3,
+    warmup_ratio: float = 0.1,
+    weight_decay: float = 0.01,
+) -> Tuple[torch.optim.Optimizer, Any]:
+    """
+    Thiết lập Optimizer AdamW với learning rate phân tầng và Linear Warmup Scheduler:
+    - Backbone (PhoBERT): lr = 2e-5
+    - Classification Head: lr = 1e-3
+    - Linear Warmup Scheduler: 10% tổng số bước huấn luyện
+    """
+    try:
+        from transformers import get_linear_schedule_with_warmup
+    except ImportError as exc:
+        raise ImportError("Cần cài đặt transformers để sử dụng get_linear_schedule_with_warmup") from exc
+
+    no_decay = ["bias", "LayerNorm.weight", "layer_norm.weight"]
+    optimizer_grouped_parameters = [
+        {
+            "params": [
+                p for n, p in model.phobert.named_parameters()
+                if not any(nd in n for nd in no_decay) and p.requires_grad
+            ],
+            "lr": lr_backbone,
+            "weight_decay": weight_decay,
+        },
+        {
+            "params": [
+                p for n, p in model.phobert.named_parameters()
+                if any(nd in n for nd in no_decay) and p.requires_grad
+            ],
+            "lr": lr_backbone,
+            "weight_decay": 0.0,
+        },
+        {
+            "params": [p for p in model.classifier.parameters() if p.requires_grad],
+            "lr": lr_head,
+            "weight_decay": weight_decay,
+        },
+    ]
+
+    optimizer = torch.optim.AdamW(optimizer_grouped_parameters)
+    warmup_steps = int(total_steps * warmup_ratio)
+    scheduler = get_linear_schedule_with_warmup(
+        optimizer,
+        num_warmup_steps=warmup_steps,
+        num_training_steps=total_steps,
+    )
+    return optimizer, scheduler
+
+
+def _forward_batch(model: nn.Module, batch: Dict[str, Any], device: torch.device) -> torch.Tensor:
+    """Helper điều phối forward pass linh hoạt cho cả BiLSTM và PhoBERT."""
+    input_ids = batch["input_ids"].to(device)
+    if isinstance(model, PhoBERTClassifier) or "attention_mask" in batch:
+        attention_mask = batch.get("attention_mask")
+        if attention_mask is not None:
+            attention_mask = attention_mask.to(device)
+        token_type_ids = batch.get("token_type_ids")
+        if token_type_ids is not None:
+            token_type_ids = token_type_ids.to(device)
+        return model(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+    elif "lengths" in batch:
+        lengths = batch["lengths"].to(device)
+        return model(input_ids, lengths)
+    else:
+        return model(input_ids)
+
 
 def train_one_epoch(
     model: nn.Module,
@@ -277,9 +373,10 @@ def train_one_epoch(
     criterion: nn.Module,
     device: torch.device,
     clip_grad: float = 1.0,
+    scheduler: Optional[Any] = None,
 ) -> Tuple[float, float]:
     """
-    Huấn luyện mô hình qua 1 Epoch.
+    Huấn luyện mô hình qua 1 Epoch (tương thích cả Bi-LSTM và PhoBERT).
     
     Returns:
         Tuple[float, float]: (loss trung bình, accuracy trung bình)
@@ -290,18 +387,18 @@ def train_one_epoch(
     total = 0
 
     for batch in dataloader:
-        input_ids = batch["input_ids"].to(device)
-        lengths = batch["lengths"].to(device)
-        labels = batch["label"].to(device)
+        labels = (batch["label"] if "label" in batch else batch["labels"]).to(device)
 
         optimizer.zero_grad()
-        logits = model(input_ids, lengths)
+        logits = _forward_batch(model, batch, device)
         loss = criterion(logits, labels)
 
         loss.backward()
         if clip_grad > 0:
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=clip_grad)
         optimizer.step()
+        if scheduler is not None:
+            scheduler.step()
 
         batch_size = labels.size(0)
         total_loss += loss.item() * batch_size
@@ -321,7 +418,7 @@ def evaluate_model(
     device: torch.device,
 ) -> Tuple[float, float, np.ndarray, np.ndarray]:
     """
-    Đánh giá mô hình trên tập Validation hoặc Test.
+    Đánh giá mô hình trên tập Validation hoặc Test (tương thích cả Bi-LSTM và PhoBERT).
     
     Returns:
         Tuple[float, float, np.ndarray, np.ndarray]:
@@ -337,11 +434,8 @@ def evaluate_model(
 
     with torch.no_grad():
         for batch in dataloader:
-            input_ids = batch["input_ids"].to(device)
-            lengths = batch["lengths"].to(device)
-            labels = batch["label"].to(device)
-
-            logits = model(input_ids, lengths)
+            labels = (batch["label"] if "label" in batch else batch["labels"]).to(device)
+            logits = _forward_batch(model, batch, device)
             loss = criterion(logits, labels)
 
             batch_size = labels.size(0)
@@ -364,6 +458,7 @@ def save_checkpoint(
     epoch: int = 0,
     metrics: Optional[Dict[str, float]] = None,
     save_path: Union[str, Path] = "models/bilstm_sentiment.pt",
+    extra_state: Optional[Dict[str, Any]] = None,
 ) -> None:
     """Lưu trữ checkpoint trọng số mô hình."""
     path = Path(save_path)
@@ -375,6 +470,8 @@ def save_checkpoint(
     }
     if optimizer is not None:
         state["optimizer_state_dict"] = optimizer.state_dict()
+    if extra_state is not None:
+        state.update(extra_state)
     torch.save(state, path)
 
 
@@ -390,7 +487,7 @@ def load_checkpoint(
         raise FileNotFoundError(f"Không tìm thấy checkpoint tại: {path}")
 
     map_location = device if device is not None else torch.device("cpu")
-    checkpoint = torch.load(path, map_location=map_location)
+    checkpoint = torch.load(path, map_location=map_location, weights_only=False)
     model.load_state_dict(checkpoint["model_state_dict"])
 
     if optimizer is not None and "optimizer_state_dict" in checkpoint:
