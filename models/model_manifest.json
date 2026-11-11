@@ -1,0 +1,32 @@
+{
+  "best_bilstm.pt": {
+    "source_file": "best_bilstm.pt",
+    "source_bytes": 13087751,
+    "source_sha256": "55790d94a19c9c256496fb5bfe69f11aa5c76d5b4af58bd2217a25f3f78b55e0",
+    "inference_bytes": 4362062,
+    "inference_sha256": "3cf52034e88fdc391af46cbfca3d42a86df79cd21a77098501c2727123c00e37",
+    "optimizer_removed": true,
+    "weights_equal_to_source": true,
+    "epoch": 4,
+    "training_metrics": {
+      "val_macro_f1": 0.6639,
+      "val_acc": 0.7468482097831568
+    },
+    "model_type": "bilstm"
+  },
+  "best_phobert.pt": {
+    "source_file": "best_phobert.pt",
+    "source_bytes": 1615528759,
+    "source_sha256": "728efecc09dd57628cc13b9e901c4ab4b3ca5fa419dfb42a56be2c52de512bb6",
+    "inference_bytes": 540084152,
+    "inference_sha256": "42cd79383c0755294353407b9dced473bd1781a054f318770e7cf466e48a17fb",
+    "optimizer_removed": true,
+    "weights_equal_to_source": true,
+    "epoch": 1,
+    "training_metrics": {
+      "val_macro_f1": 0.1285,
+      "val_acc": 0.1913767019667171
+    },
+    "model_type": "phobert"
+  }
+}

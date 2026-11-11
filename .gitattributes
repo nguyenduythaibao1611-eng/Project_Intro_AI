@@ -1,0 +1,6 @@
+# Keep the bundled tokenizer faithful to its source and collapse generated assets in reviews.
+models/phobert_assets/** linguist-generated=true
+models/phobert_assets/*.json text eol=lf
+models/phobert_assets/bpe.codes text eol=lf
+models/phobert_assets/vocab.txt text eol=lf
+run_demo.cmd text eol=crlf
