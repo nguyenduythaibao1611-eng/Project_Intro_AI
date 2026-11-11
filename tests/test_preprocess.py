@@ -11,6 +11,7 @@ from src.preprocess import (
     LABEL_TO_ID, NEGATIONS, OUTPUT_COLUMNS, STOPWORDS_SET, TEENCODE_DICT,
     clean_basic_text, normalize_teencode, preprocess_pipeline,
     segment_vietnamese, split_and_save_stratified, vocabulary_coverage,
+    clean_text_with_diff,
 )
 
 
@@ -132,6 +133,91 @@ class SplitTests(unittest.TestCase):
         self.assertEqual(result["vocabulary_size"], 2)
         self.assertEqual(result["splits"]["val"]["token_coverage"], .5)
         self.assertEqual(result["splits"]["val"]["oov_tokens"], 1)
+
+
+class PreprocessOptimizationTests(unittest.TestCase):
+    """Unit tests cho phần tối ưu hóa tiền xử lý Tuần 4 của Bùi Đình Hiếu."""
+
+    def test_clean_text_with_diff_basic(self):
+        raw = "sp này đẹpppp quáaaaa, giao hàng nhanh mà ko đắt!"
+        clean, changes = clean_text_with_diff(raw, apply_segmentation=True)
+
+        self.assertIn("sản_phẩm", clean)
+        self.assertIn("đẹp", clean)
+        self.assertIn("không", clean)
+        self.assertIsInstance(changes, list)
+        self.assertGreaterEqual(len(changes), 3)
+
+        change_types = {c["type"] for c in changes}
+        self.assertIn("teencode", change_types)
+        self.assertIn("elongation", change_types)
+
+        # Kiểm tra chi tiết cấu trúc change record
+        for c in changes:
+            self.assertIn("original", c)
+            self.assertIn("normalized", c)
+            self.assertIn("type", c)
+
+    def test_clean_text_with_diff_corner_cases(self):
+        # Chuỗi rỗng và None
+        for val in ("", None, "   \t\n  "):
+            clean, changes = clean_text_with_diff(val)
+            self.assertEqual(clean, "")
+            self.assertEqual(changes, [])
+
+        # Chuỗi chứa thẻ HTML và liên hệ
+        raw_noise = "<b>Áo</b> đẹp http://shopee.vn email me@shopee.vn sđt 0901234567 shop đỉnh"
+        clean_noise, changes_noise = clean_text_with_diff(raw_noise)
+        self.assertNotIn("<b>", clean_noise)
+        self.assertNotIn("http://shopee.vn", clean_noise)
+        self.assertNotIn("0901234567", clean_noise)
+        types_noise = {c["type"] for c in changes_noise}
+        self.assertTrue({"html", "url", "email", "phone"}.issubset(types_noise))
+
+        # Chuỗi chỉ chứa emoji / icon
+        raw_emoji = "❤️❤️👍✨🔥"
+        clean_emoji, changes_emoji = clean_text_with_diff(raw_emoji)
+        self.assertIsInstance(clean_emoji, str)
+        self.assertEqual(changes_emoji, [])
+
+        # Teencode lồng nhau và từ lóng biểu đạt cảm xúc mạnh
+        raw_slang = "sp như cc, shop phục vụ hãm vcl, lừa đảo"
+        clean_slang, changes_slang = clean_text_with_diff(raw_slang)
+        self.assertIn("sản_phẩm", clean_slang)
+        self.assertIn("rất_tệ", clean_slang)
+        self.assertIn("rất", clean_slang)
+
+    def test_preprocessing_latency_under_2ms(self):
+        import time
+        sample_texts = [
+            "sp này đẹpppp quáaaaa, giao hàng nhanh mà ko đắt",
+            "chất lượng sản phẩm rất tuyệt vời shop ơi",
+            "hàng đóng gói cẩn thận, shipper nhiệt tình thân thiện",
+            "áo mặc tạm đc nhưng vải hơi mỏng, giá 100k là hợp lý",
+            "giao hàng siêu chậm, nhắn tin shop ko thèm rep, quá thất vọng",
+            "màu sắc giống hình, mẫu mã đẹp, sẽ ủng hộ shop tiếp",
+            "mua lần 2 rồi vẫn rất ưng bụng, chuẩn bị hàng hỏa tốc",
+            "đóng gói sơ sài, hộp bị móp méo nhưng sp bên trong ko sao",
+            "tiền nào của nấy, mặc đi chơi chụp ảnh sống ảo okela",
+            "shop phục vụ đỉnh cao, rep ib siêu nhanh 10 điểm",
+        ] * 10  # 100 câu
+
+        # Warm-up
+        for t in sample_texts[:10]:
+            clean_text_with_diff(t)
+
+        start = time.perf_counter()
+        for t in sample_texts:
+            clean_text_with_diff(t)
+        total_time = time.perf_counter() - start
+        avg_time_ms = (total_time / len(sample_texts)) * 1000
+
+        # Kiểm tra chỉ tiêu DoD: thời gian làm sạch chuỗi < 2 mili-giây/câu
+        self.assertLess(
+            avg_time_ms,
+            2.0,
+            f"Độ trễ trung bình {avg_time_ms:.3f}ms vượt quá ngưỡng cho phép 2.0ms!"
+        )
 
 
 if __name__ == "__main__":
