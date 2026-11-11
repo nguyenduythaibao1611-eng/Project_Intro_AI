@@ -114,6 +114,19 @@ TEENCODE_DICT: Dict[str, str] = {
     "lừa đảo": "lừa đảo", "lua dao": "lừa đảo", "luadao": "lừa đảo", "lđ": "lừa đảo",
     "lởm": "kém chất lượng", "lom": "kém chất lượng", "dỏm": "kém chất lượng", "dom": "kém chất lượng",
     "hãm": "tệ", "ham": "tệ", "bực": "bực mình", "buc": "bực mình",
+    # Mở rộng từ lóng và viết tắt TMĐT Shopee Tuần 4 (E-commerce Delivery, Quality & Sentiment Slang)
+    "hoatoc": "hỏa tốc", "hoa toc": "hỏa tốc", "giao hoa toc": "giao hỏa tốc", "giao hoatoc": "giao hỏa tốc",
+    "chuanbihang": "chuẩn bị hàng", "chuan bi hang": "chuẩn bị hàng", "cb hang": "chuẩn bị hàng",
+    "dong goi can than": "đóng gói cẩn thận", "dg cẩn thận": "đóng gói cẩn thận",
+    "xin": "tốt", "xịn": "tốt", "xinxo": "tốt", "xịn xò": "tốt", "xịn sò": "tốt",
+    "dinh": "tuyệt vời", "đỉnh": "tuyệt vời", "dinh cao": "tuyệt vời", "đỉnh cao": "tuyệt vời",
+    "qua da": "tuyệt vời", "quá đã": "tuyệt vời", "ung bung": "ưng ý", "ưng bụng": "ưng ý",
+    "dang tien": "đáng tiền", "đáng tiền": "đáng tiền", "dang dong tien": "đáng tiền", "đáng đồng tiền": "đáng tiền",
+    "kp": "không phải", "k phai": "không phải", "ko phai": "không phải", "khong phai": "không phải",
+    "k thik": "không thích", "ko thik": "không thích", "khum thik": "không thích",
+    "k ung": "không ưng ý", "ko ung": "không ưng ý", "k ưng": "không ưng ý", "ko ưng": "không ưng ý",
+    "hang deu": "hàng giả", "hàng đểu": "hàng giả", "chan doi": "thất vọng", "chán đời": "thất vọng",
+    "treo dau de ban thit cho": "lừa đảo", "treo đầu dê bán thịt chó": "lừa đảo",
 }
 # Defined for team compatibility. Removal is intentionally disabled: short review
 # particles, intensifiers and negations can carry sentiment.
@@ -131,7 +144,7 @@ _WHITESPACE = re.compile(r"\s+")
 DOMAIN_COMPOUNDS = {phrase: phrase.replace(" ", "_") for phrase in (
     "sản phẩm", "giao hàng", "chất lượng", "hài lòng", "thất vọng", "cửa hàng",
     "chính hãng", "đóng gói", "phản hồi", "trả lời", "bảo hành", "đổi trả",
-    "rất tệ", "kém chất lượng", "lừa đảo", "bực mình",
+    "rất tệ", "kém chất lượng", "lừa đảo", "bực mình", "chuẩn bị hàng", "hỏa tốc", "đáng tiền",
 )}
 
 
