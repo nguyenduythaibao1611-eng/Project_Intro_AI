@@ -241,6 +241,88 @@ def preprocess_pipeline(text: str) -> str:
     return segment_vietnamese(normalize_teencode(clean_basic_text(text), TEENCODE_DICT))
 
 
+def clean_text_with_diff(
+    raw_text: str,
+    apply_segmentation: bool = True
+) -> Tuple[str, List[Dict[str, str]]]:
+    """Clean and normalize Vietnamese e-commerce text, tracking all modifications.
+
+    Designed for low-latency (< 2ms) inference and real-time visual diff
+    inspection in the Streamlit Web Demo.
+
+    Args:
+        raw_text: Raw review string containing potential teencode, noise, or contacts.
+        apply_segmentation: Whether to apply PyVi word segmentation on the output.
+
+    Returns:
+        tuple[str, list[dict]]:
+            - clean_text: Fully normalized, teencode-expanded and optionally segmented text.
+            - changes: Detailed list of interventions, each represented as:
+              {"original": str, "normalized": str, "type": str}
+              Types include: 'teencode', 'elongation', 'html', 'url', 'email', 'phone'.
+    """
+    if raw_text is None or (not isinstance(raw_text, str) and pd.isna(raw_text)):
+        return "", []
+
+    text_raw = str(raw_text)
+    if not text_raw.strip():
+        return "", []
+
+    changes: List[Dict[str, str]] = []
+    seen_changes = set()
+
+    def _record_change(orig: str, norm: str, ctype: str) -> None:
+        key = (orig, norm, ctype)
+        if key not in seen_changes:
+            seen_changes.add(key)
+            changes.append({"original": orig, "normalized": norm, "type": ctype})
+
+    # 1. Track HTML removals
+    for match in _HTML_TAGS.finditer(text_raw):
+        _record_change(match.group(), "", "html")
+
+    # 2. Track contact removals (URL, Email, Phone)
+    for match in _URL.finditer(text_raw):
+        _record_change(match.group(), "", "url")
+    for match in _EMAIL.finditer(text_raw):
+        _record_change(match.group(), "", "email")
+    for match in _PHONE.finditer(text_raw):
+        _record_change(match.group(), "", "phone")
+
+    # 3. Track elongation
+    for match in _WORD.finditer(text_raw):
+        w = match.group()
+        collapsed = _collapse_word_elongation(w)
+        if collapsed != w:
+            _record_change(w, collapsed, "elongation")
+
+    # 4. Basic cleaning
+    cleaned = clean_basic_text(text_raw)
+
+    # 5. Track teencode substitutions
+    mapping, matches = _teencode_matches(cleaned, TEENCODE_DICT)
+    for m in matches:
+        orig = m.group()
+        norm = mapping.get(orig.lower(), orig)
+        if orig.lower() != norm.lower():
+            if apply_segmentation and norm in DOMAIN_COMPOUNDS:
+                norm_display = DOMAIN_COMPOUNDS[norm]
+            else:
+                norm_display = norm
+            _record_change(orig, norm_display, "teencode")
+
+    # 6. Normalize teencode
+    normalized = normalize_teencode(cleaned, TEENCODE_DICT)
+
+    # 7. Word Segmentation
+    if apply_segmentation:
+        final_clean = segment_vietnamese(normalized)
+    else:
+        final_clean = normalized
+
+    return final_clean, changes
+
+
 def _word_tokens(text: str) -> list[str]:
     return _TOKENS.findall(text.lower())
 
