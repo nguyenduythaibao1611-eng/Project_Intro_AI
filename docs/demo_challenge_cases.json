@@ -1,0 +1,179 @@
+{
+  "version": "1.0",
+  "title": "Shopee Sentiment Analysis — 15 Ca Kiểm Thử Thách Thức cho Web Demo",
+  "author": "Châu Tuấn Kiệt (kiet00394-collab)",
+  "handover_to": "Đặng Đức Minh (app.py - Streamlit Web Demo)",
+  "categories": {
+    "sarcasm": "Mỉa mai (Sarcasm): Khen hình thức nhưng chê thực tế — Baseline đoán nhầm POS, PhoBERT hiểu ngữ cảnh đoán đúng NEG",
+    "implicit_praise": "Khen ngầm (Implicit Praise): Dùng từ ngữ tiêu cực nhưng hàm ý khen ngợi cực độ — Baseline đoán nhầm NEG, PhoBERT đoán đúng POS",
+    "teencode_slang": "Teencode & Từ lóng Shopee phức tạp: Viết tắt TMĐT, không dấu, biến thể kéo dài ký tự"
+  },
+  "cases": [
+    {
+      "id": "SARCASM_01",
+      "title": "Mỉa mai #1: Nhiệt tình giao quần bung chỉ",
+      "category": "sarcasm",
+      "category_vi": "Mỉa mai",
+      "text": "Shop phục vụ quá nhiệt tình luôn á, tư vấn siêu có tâm xong gửi cho cái quần mặc đúng 1 lần bung hết chỉ, rất đáng đồng tiền!",
+      "expected_label": "NEG",
+      "baseline_pred": "POS",
+      "phobert_expected": "NEG",
+      "explanation": "Túi từ TF-IDF bị đánh lừa bởi loạt cụm từ tích cực ('nhiệt tình', 'có tâm', 'đáng đồng tiền') nhưng bỏ qua thực tế sản phẩm bung hết chỉ."
+    },
+    {
+      "id": "SARCASM_02",
+      "title": "Mỉa mai #2: Sang chảnh nhưng mùi nhựa khét",
+      "category": "sarcasm",
+      "category_vi": "Mỉa mai",
+      "text": "Đúng là hàng cao cấp nhìn sang chảnh lắm, chỉ tiếc là mùi nhựa khét lẹt không xài nổi, cảm ơn shop nhiều nha!",
+      "expected_label": "NEG",
+      "baseline_pred": "POS",
+      "phobert_expected": "NEG",
+      "explanation": "Cụm khen ngợi hình thức ('cao cấp', 'sang chảnh', 'cảm ơn shop') áp đảo trọng số TF-IDF trước mệnh đề chê chất lượng 'không xài nổi'."
+    },
+    {
+      "id": "SARCASM_03",
+      "title": "Mỉa mai #3: Màu đẹp xuất sắc, vải mỏng như giấy",
+      "category": "sarcasm",
+      "category_vi": "Mỉa mai",
+      "text": "Màu sắc đẹp xuất sắc, mẫu mã y hình luôn mỗi tội chất vải mỏng tang nhìn xuyên thấu như giấy, tuyệt vời lắm shop!",
+      "expected_label": "NEG",
+      "baseline_pred": "POS",
+      "phobert_expected": "NEG",
+      "explanation": "Lối nói mỉa mai cuối câu ('tuyệt vời lắm shop!') cộng từ khen hình thức khiến Baseline gán POS dù người mua chê vải mỏng xuyên thấu."
+    },
+    {
+      "id": "SARCASM_04",
+      "title": "Mỉa mai #4: 5 sao giao nhanh, dùng 2 ngày hỏng",
+      "category": "sarcasm",
+      "category_vi": "Mỉa mai",
+      "text": "Cho shop 5 sao vì giao hàng siêu tốc, còn sản phẩm thì dùng 2 ngày hỏng luôn không kịp trở tay, quá đỉnh!",
+      "expected_label": "NEG",
+      "baseline_pred": "POS",
+      "phobert_expected": "NEG",
+      "explanation": "Baseline bắt mạnh từ khóa '5 sao', 'siêu tốc', 'quá đỉnh' mà không nhận ra ý mỉa mai sản phẩm hỏng sau 2 ngày."
+    },
+    {
+      "id": "SARCASM_05",
+      "title": "Mỉa mai #5: Bọc hàng đẹp, chất lượng hàng chợ",
+      "category": "sarcasm",
+      "category_vi": "Mỉa mai",
+      "text": "Ưng cái cách shop bọc hàng đẹp đẽ sạch sẽ, còn chất lượng thì đúng kiểu hàng chợ bán giá trên trời, rất hài lòng!",
+      "expected_label": "NEG",
+      "baseline_pred": "POS",
+      "phobert_expected": "NEG",
+      "explanation": "Từ khóa 'ưng', 'đẹp đẽ sạch sẽ', 'rất hài lòng' che khuất sự tương phản châm biếm về hàng chợ bán giá cao."
+    },
+    {
+      "id": "PRAISE_01",
+      "title": "Khen ngầm #1: Tức ghê vì không có lý do để chê",
+      "category": "implicit_praise",
+      "category_vi": "Khen ngầm",
+      "text": "Chả hiểu sao shop bán rẻ thế, nhận hàng xong tức ghê vì không có lý do gì để chê luôn á!",
+      "expected_label": "POS",
+      "baseline_pred": "NEG",
+      "phobert_expected": "POS",
+      "explanation": "Baseline bắt nhầm từ 'tức ghê', 'chê' và 'không' riêng lẻ để gán NEG, không hiểu cấu trúc phủ định tích cực 'không có lý do gì để chê'."
+    },
+    {
+      "id": "PRAISE_02",
+      "title": "Khen ngầm #2: Ghét shop vì mặc tôn dáng quá",
+      "category": "implicit_praise",
+      "category_vi": "Khen ngầm",
+      "text": "Trời ơi ghét cái shop này dã man, áo gì mà mặc lên tôn dáng quá làm bạn bè hỏi mua suốt mệt hết cả người!",
+      "expected_label": "POS",
+      "baseline_pred": "NEG",
+      "phobert_expected": "POS",
+      "explanation": "Lối nói 'ghét dã man', 'mệt hết cả người' thực chất là khen áo tôn dáng cực kỳ ưng ý; túi từ không hiểu sắc thái khẩu ngữ."
+    },
+    {
+      "id": "PRAISE_03",
+      "title": "Khen ngầm #3: Kỳ cục giặt chục lần không phai",
+      "category": "implicit_praise",
+      "category_vi": "Khen ngầm",
+      "text": "Chưa bao giờ thấy cái quần nào kỳ cục vậy, giặt chục lần rồi mà không xù không phai màu chút nào, bó tay!",
+      "expected_label": "POS",
+      "baseline_pred": "NEG",
+      "phobert_expected": "POS",
+      "explanation": "Các từ bề mặt 'chưa bao giờ', 'kỳ cục', 'bó tay', 'không' kéo TF-IDF về NEG dù nội dung ca ngợi độ bền xuất sắc."
+    },
+    {
+      "id": "PRAISE_04",
+      "title": "Khen ngầm #4: Giá bèo mà xịn như hàng hiệu",
+      "category": "implicit_praise",
+      "category_vi": "Khen ngầm",
+      "text": "Không thể tin nổi với cái giá bèo nhèo này mà hàng xịn không khác gì hàng hiệu, làm mất công đi mua ngoài tiệm trước giờ!",
+      "expected_label": "POS",
+      "baseline_pred": "NEG",
+      "phobert_expected": "POS",
+      "explanation": "Các cụm 'không thể', 'bèo nhèo', 'mất công' kích hoạt trọng số tiêu cực ở Baseline thay vì nhận diện hàm ý khen chất lượng vượt giá tiền."
+    },
+    {
+      "id": "PRAISE_05",
+      "title": "Khen ngầm #5: Sợ hãi chất lượng đường may khét lẹt",
+      "category": "implicit_praise",
+      "category_vi": "Khen ngầm",
+      "text": "Sợ hãi cái chất lượng này thật sự, giá sinh viên mà đường kim mũi chỉ khét lẹt không tìm nổi một cọng chỉ thừa!",
+      "expected_label": "POS",
+      "baseline_pred": "NEG",
+      "phobert_expected": "POS",
+      "explanation": "Ngôn ngữ giới trẻ dùng 'sợ hãi', 'khét lẹt', 'không tìm nổi' để khen ngợi độ hoàn thiện xuất sắc so với giá rẻ."
+    },
+    {
+      "id": "TEENCODE_01",
+      "title": "Teencode #1: Khen hàng chuẩn teencode GenZ",
+      "category": "teencode_slang",
+      "category_vi": "Teencode & Từ lóng",
+      "text": "sp okela k chê đc j lun, ship nhah vkl, vải mềm mặc mát xỉu, mng chốt đơn gấp kẻo hết sz nha!!",
+      "expected_label": "POS",
+      "baseline_pred": "POS",
+      "phobert_expected": "POS",
+      "explanation": "Kiểm thử khả năng chuẩn hóa đồng thời teencode viết tắt ('sp', 'okela', 'k', 'đc', 'lun', 'nhah', 'vkl', 'mng', 'sz')."
+    },
+    {
+      "id": "TEENCODE_02",
+      "title": "Teencode #2: Không dấu + lóng 'hết nước chấm'",
+      "category": "teencode_slang",
+      "category_vi": "Teencode & Từ lóng",
+      "text": "hang dep lem lun ak, moi toi ship hoi lau xiu nhg ma nhan dc do rui thi het nuoc cham lun tks shoppp",
+      "expected_label": "POS",
+      "baseline_pred": "NEG",
+      "phobert_expected": "POS",
+      "explanation": "Câu tiếng Việt không dấu kết hợp lóng 'het nuoc cham' và kéo dài ký tự khiến Baseline dễ đoán nhầm NEG."
+    },
+    {
+      "id": "TEENCODE_03",
+      "title": "Teencode #3: Trung tính pha trộn khen chê",
+      "category": "teencode_slang",
+      "category_vi": "Teencode & Từ lóng",
+      "text": "chất lg bth thui mn, vải hơi mỏng vs có chỉ thừa xíu, k quá tệ nhưng cx k xuất sắc lắm, tạm đc nha",
+      "expected_label": "NEU",
+      "baseline_pred": "NEG",
+      "phobert_expected": "NEU",
+      "explanation": "Đánh giá 3 sao điển hình viết bằng teencode ('chất lg', 'bth', 'vs', 'cx', 'tạm đc') có ranh giới mong manh giữa NEU và NEG."
+    },
+    {
+      "id": "TEENCODE_04",
+      "title": "Teencode #4: Trung tính giao chậm nhưng giá ổn",
+      "category": "teencode_slang",
+      "category_vi": "Teencode & Từ lóng",
+      "text": "sp cũng bth thui k có j đặc biệt, vải tạm đc nhg giao hàng hơi chậm xíu, vs giá này cx tạm ổn",
+      "expected_label": "NEU",
+      "baseline_pred": "NEU",
+      "phobert_expected": "NEU",
+      "explanation": "Kiểm thử khả năng giữ đúng nhãn trung tính NEU sau khi quy đổi chuỗi viết tắt ('sp', 'bth', 'nhg', 'vs', 'cx')."
+    },
+    {
+      "id": "TEENCODE_05",
+      "title": "Teencode #5: Tố lừa đảo hàng fake nhiều từ lóng",
+      "category": "teencode_slang",
+      "category_vi": "Teencode & Từ lóng",
+      "text": "shop lừa đảo vkl, qc hàng auth mà gửi toàn hàng fake lởm, nt hỏi k thèm rep, né gấp mn ơi!!",
+      "expected_label": "NEG",
+      "baseline_pred": "NEG",
+      "phobert_expected": "NEG",
+      "explanation": "Kiểm thử từ lóng gay gắt và viết tắt TMĐT ('qc', 'auth', 'fake', 'lởm', 'nt', 'rep', 'vkl', 'mn')."
+    }
+  ]
+}
+
