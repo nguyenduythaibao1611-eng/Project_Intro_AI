@@ -532,6 +532,16 @@ def _evaluate_linearsvc_baseline(
     return record
 
 
+def _load_checkpoint_payload(ckpt_path: Path, device: Any) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Tải state_dict và metadata tùy chọn từ checkpoint (.pt) tương thích với src/train.py và src/inference.py."""
+    import torch
+
+    payload = torch.load(ckpt_path, map_location=device, weights_only=False)
+    if isinstance(payload, dict) and "model_state_dict" in payload:
+        return payload["model_state_dict"], payload
+    return payload, {}
+
+
 def _evaluate_bilstm_if_available(
     texts: List[str],
     y_true: np.ndarray,
@@ -542,12 +552,20 @@ def _evaluate_bilstm_if_available(
         return None
     import torch
     from src.dataset import MAX_SEQUENCE_LENGTH, SentimentDataset, Vocabulary, create_data_loader
-    from src.models import BiLSTMClassifier, load_checkpoint
+    from src.models import BiLSTMClassifier
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     vocab = Vocabulary.load(vocab_path)
-    model = BiLSTMClassifier(vocab_size=len(vocab)).to(device)
-    load_checkpoint(model, ckpt_path, device=device)
+    state_dict, meta = _load_checkpoint_payload(ckpt_path, device)
+    model = BiLSTMClassifier(
+        vocab_size=int(meta.get("vocab_size", len(vocab))),
+        embedding_dim=int(meta.get("embedding_dim", 128)),
+        hidden_dim=int(meta.get("hidden_dim", 128)),
+        output_dim=3,
+        num_layers=int(meta.get("num_layers", 2)),
+        dropout_rate=float(meta.get("dropout_rate", 0.3)),
+    ).to(device)
+    model.load_state_dict(state_dict)
     model.eval()
 
     def predict_fn(batch_texts: Sequence[str]) -> np.ndarray:
@@ -584,15 +602,28 @@ def _evaluate_phobert_if_available(
     try:
         import torch
         from transformers import AutoTokenizer
-        from src.models import PhoBERTClassifier, load_checkpoint
+        from src.models import PhoBERTClassifier
     except ImportError:
         print("[BENCHMARK] Có checkpoint PhoBERT nhưng thiếu thư viện `transformers`.")
         return None
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    tokenizer = AutoTokenizer.from_pretrained(pretrained_name)
-    model = PhoBERTClassifier(model_name=pretrained_name, num_classes=3).to(device)
-    load_checkpoint(model, ckpt_path, device=device)
+    state_dict, meta = _load_checkpoint_payload(ckpt_path, device)
+    model_name = str(meta.get("model_name", pretrained_name))
+    num_classes = int(meta.get("num_classes", 3))
+    dropout_rate = float(meta.get("dropout_rate", 0.2))
+
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+    except Exception:
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+    model = PhoBERTClassifier(
+        model_name=model_name,
+        num_classes=num_classes,
+        dropout_rate=dropout_rate,
+    ).to(device)
+    model.load_state_dict(state_dict)
     model.eval()
 
     def predict_fn(batch_texts: Sequence[str]) -> np.ndarray:
@@ -608,9 +639,11 @@ def _evaluate_phobert_if_available(
                     max_length=64,
                     return_tensors="pt",
                 )
+                token_type_ids = enc.get("token_type_ids")
                 logits = model(
                     input_ids=enc["input_ids"].to(device),
                     attention_mask=enc["attention_mask"].to(device),
+                    token_type_ids=token_type_ids.to(device) if token_type_ids is not None else None,
                 )
                 preds.extend(torch.argmax(logits, dim=-1).cpu().tolist())
         return np.array(preds)
@@ -668,11 +701,15 @@ def run_benchmark_pipeline(
     )
     records.append(svc_rec if svc_rec is not None else make_pending_benchmark_record("LinearSVC (Baseline)"))
 
+    bilstm_vocab = m_dir / "vocab.json"
+    if not bilstm_vocab.exists():
+        bilstm_vocab = m_dir / "bilstm_vocab.json"
+
     bilstm_rec = _evaluate_bilstm_if_available(
         texts,
         y_true,
         m_dir / "best_bilstm.pt",
-        m_dir / "bilstm_vocab.json",
+        bilstm_vocab,
     )
     records.append(bilstm_rec if bilstm_rec is not None else make_pending_benchmark_record("Bi-LSTM"))
 

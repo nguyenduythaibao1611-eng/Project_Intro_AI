@@ -28,6 +28,7 @@ from src.evaluate import (
     make_pending_benchmark_record,
     measure_inference_latency,
     plot_and_save_confusion_matrix,
+    run_benchmark_pipeline,
     validate_challenge_cases,
 )
 from src.preprocess import ID_TO_LABEL, preprocess_pipeline
@@ -175,3 +176,72 @@ def test_benchmark_comparison_csv_schema():
     df = pd.read_csv(csv_path, encoding="utf-8-sig")
     assert list(df.columns) == BENCHMARK_COLUMNS
     assert list(df["Model Name"]) == ["LinearSVC (Baseline)", "Bi-LSTM", "PhoBERT v2"]
+
+
+def test_run_benchmark_pipeline_with_hoang_vocab_and_bilstm_checkpoint(tmp_path):
+    from src.dataset import Vocabulary
+    from src.models import BiLSTMClassifier, save_checkpoint
+
+    repo_vocab = REPO_ROOT / "models" / "vocab.json"
+    if repo_vocab.exists():
+        loaded_repo_vocab = Vocabulary.load(repo_vocab)
+        assert len(loaded_repo_vocab) > 100
+
+    models_dir = tmp_path / "models"
+    models_dir.mkdir(parents=True, exist_ok=True)
+    texts = [
+        "sản_phẩm tốt giao_hàng nhanh",
+        "hàng kém chất_lượng rất tệ",
+        "tạm được bình_thường thôi",
+        "áo đẹp mặc mát rất ưng_ý",
+        "shop lừa_đảo hàng giả dỏm",
+        "giao chậm xíu nhưng giá tạm ổn",
+    ]
+    labels = [2, 0, 1, 2, 0, 1]
+
+    vocab = Vocabulary(min_freq=1)
+    vocab.build_vocab(texts)
+    vocab.save(models_dir / "vocab.json")
+
+    model = BiLSTMClassifier(
+        vocab_size=len(vocab),
+        embedding_dim=32,
+        hidden_dim=16,
+        output_dim=3,
+        num_layers=1,
+        dropout_rate=0.1,
+    )
+    save_checkpoint(
+        model=model,
+        save_path=models_dir / "best_bilstm.pt",
+        extra_state={
+            "model_type": "bilstm",
+            "vocab_size": len(vocab),
+            "embedding_dim": 32,
+            "hidden_dim": 16,
+            "num_layers": 1,
+            "dropout_rate": 0.1,
+        },
+    )
+
+    test_csv = tmp_path / "test.csv"
+    pd.DataFrame({"processed_content": texts, "label_id": labels}).to_csv(
+        test_csv, index=False, encoding="utf-8-sig"
+    )
+    out_csv = tmp_path / "benchmark_out.csv"
+
+    df = run_benchmark_pipeline(
+        test_csv=test_csv,
+        output_csv=out_csv,
+        phobert_cm_path=tmp_path / "phobert_cm.png",
+        models_dir=models_dir,
+    )
+    assert out_csv.exists()
+    assert list(df.columns) == BENCHMARK_COLUMNS
+
+    bilstm_row = df[df["Model Name"] == "Bi-LSTM"].iloc[0]
+    assert bilstm_row["Accuracy"] != "PENDING_CHECKPOINT"
+    assert float(bilstm_row["Inference Latency (ms)"]) > 0.0
+
+    phobert_row = df[df["Model Name"] == "PhoBERT v2"].iloc[0]
+    assert phobert_row["Accuracy"] == "PENDING_CHECKPOINT"
