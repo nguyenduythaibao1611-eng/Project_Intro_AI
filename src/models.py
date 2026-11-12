@@ -298,14 +298,14 @@ def get_phobert_optimizer_and_scheduler(
     model: PhoBERTClassifier,
     total_steps: int,
     lr_backbone: float = 2e-5,
-    lr_head: float = 1e-3,
+    lr_head: float = 1e-4,
     warmup_ratio: float = 0.1,
     weight_decay: float = 0.01,
 ) -> Tuple[torch.optim.Optimizer, Any]:
     """
     Thiết lập Optimizer AdamW với learning rate phân tầng và Linear Warmup Scheduler:
     - Backbone (PhoBERT): lr = 2e-5
-    - Classification Head: lr = 1e-3
+    - Classification Head: lr = 1e-4 (tránh gradient explosion và mode collapse)
     - Linear Warmup Scheduler: 10% tổng số bước huấn luyện
     """
     try:
