@@ -1,0 +1,51 @@
+﻿text,true_label,pred_label
+Ko bị vỡ như các bình luận trên nói,POS,NEG
+Shop làm em tốn tìn mua áo mới rồi,NEG,POS
+"Mình ở ĐN 12h trưa hôm trc đặt hàng, 3h chiều hôm sau tới tay luôn",POS,NEG
+"Áo trắng hơi mỏng chất k đc đẹp, áo đen thì chấtnok hơn",POS,NEG
+Chất co dãn vừa phải mặc tôn dáng dã man,NEG,POS
+"Có v3, có đùi mặc xấu",POS,NEG
+Nen mua,POS,NEG
+Gián chết la liệt,POS,NEG
+Mình ở xa nơi bán nên chắc ko hi vọng DVBH,POS,NEG
+Trừ 1 sao vì giao hàng lâu,POS,NEG
+"Tuy nhiên hộp giày k chắc chắn nên bị móp, nhưng k sao",POS,NEG
+Mỗi tội một cùng 1 set mà cái to cái nhỏ,POS,NEG
+Màu sắc lung tung,NEG,POS
+Áo đẹp mà suýt k nhận hàg,POS,NEG
+Thời gian giao hàng rất nhanh Chất lượng xấu,NEG,POS
+Shop giao đúng size đúng màu,POS,NEG
+Bỏ công chờ đợi 2 tuần,POS,NEG
+"Áo rộng quá, mình mặc sz áo khác là 38 mà áo này 38 đóng cài khuy trong cùng mà vẫn rộng",POS,NEG
+Quả ngực mặc vô nhìn cứ bị nhọn chứ ko có tròn,POS,NEG
+Hic nón đẹp mà rộng ơi là rộng,POS,NEG
+Nếu có 0 sao thì shop sẽ đc nhận,NEG,POS
+"Lúc đặt hàng cũng sợ hàng khi nhận khác xa vs trong ảnh nhưng khi nhận dc hàng rồi thấy mình k có mua lầm .Shop gửi hàng nhanh, có giấy cảm ơn và dây cột tóc làm cho KH cảm thấy vui vui",POS,NEG
+Hết chỗ ns lun,POS,NEG
+Mong shop có nhiều khách hơn,POS,NEG
+"Lần sau m sẽ mua tiếp, hy vong lần sau shop giao đúng màu đúng mẫu nhé",NEG,POS
+Mặc dù tiếng tàu không nhưng sử dụng cũng đơn giản,POS,NEG
+Vải tốt nhưng Form áo xấu,NEG,POS
+"Khuyên mn mua size to to tý, để trông cool hơn",POS,NEG
+Hộp khi nhận nhìn lô lắm mn ạ,NEG,POS
+Mua lần đầu cũng là lần cuối,NEG,POS
+Bị giao nhầm hàng quần nhưng quần này cũng OK.chất lieuj vải co dãn.vải dày dặn,NEG,POS
+Lâu phai.,POS,NEG
+"Mình 48kg mặc rất rộng, vậy mà shop tư vấn bảo vừa",NEG,POS
+E mua hơn 20c bên shop r mà,POS,NEG
+"Giao hàng kém chất lượng k giống hình và quãng cáo,đừng ai ghé shop này nhé,hàng cho cũng k thèm,đừng nói bổ tiền ra mua rất phí",POS,NEG
+Bền hay không còn phải sử dụng đã,POS,NEG
+Hình ảnh của shop và hàng mình nhận khác hoắc,NEG,POS
+Có điều shop giao hàng cho bên vận chuyển lâu,POS,NEG
+Được cái giao hàng nhanh,NEG,POS
+Giao thiếu 1 số món nhưng giải quyết hợp lý. 5 sao,POS,NEG
+Nhận hàng xong còn hỏi thăm nữa,POS,NEG
+"Thời gian giao hàng rất nhanh , áo rẻ nhung cộng phí vào la mắc, k đáng tiền, thua hàng chợ",NEG,POS
+Mình ở tận Đồng Nai mà 4 ngày đã tới nơi,POS,NEG
+Chưa bao giờ hài lòng như thế khi mua hàng qua mạng,POS,NEG
+Shop sơ suất quá,NEG,POS
+Bán hàng kiểu đéo gì....mà êm vs hợp tuối tiền quá vậy Number 1,POS,NEG
+Gói kỹ quá bóc rách cả hộp :((,POS,NEG
+Đã mua và quay lại 😘,POS,NEG
+Áo bò hơi rộng mà ks,POS,NEG
+dã mua ba đôi,POS,NEG

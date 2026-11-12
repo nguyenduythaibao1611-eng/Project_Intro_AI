@@ -1,0 +1,16 @@
+﻿case_id,category,text,reference_label,baseline_prediction,bilstm_prediction,phobert_prediction
+SARCASM_01,sarcasm,"Shop phục vụ quá nhiệt tình luôn á, tư vấn siêu có tâm xong gửi cho cái quần mặc đúng 1 lần bung hết chỉ, rất đáng đồng tiền!",NEG,POS,POS,NEU
+SARCASM_02,sarcasm,"Đúng là hàng cao cấp nhìn sang chảnh lắm, chỉ tiếc là mùi nhựa khét lẹt không xài nổi, cảm ơn shop nhiều nha!",NEG,POS,NEG,NEU
+SARCASM_03,sarcasm,"Màu sắc đẹp xuất sắc, mẫu mã y hình luôn mỗi tội chất vải mỏng tang nhìn xuyên thấu như giấy, tuyệt vời lắm shop!",NEG,POS,POS,NEU
+SARCASM_04,sarcasm,"Cho shop 5 sao vì giao hàng siêu tốc, còn sản phẩm thì dùng 2 ngày hỏng luôn không kịp trở tay, quá đỉnh!",NEG,POS,POS,NEU
+SARCASM_05,sarcasm,"Ưng cái cách shop bọc hàng đẹp đẽ sạch sẽ, còn chất lượng thì đúng kiểu hàng chợ bán giá trên trời, rất hài lòng!",NEG,POS,POS,NEU
+PRAISE_01,implicit_praise,"Chả hiểu sao shop bán rẻ thế, nhận hàng xong tức ghê vì không có lý do gì để chê luôn á!",POS,NEG,POS,NEU
+PRAISE_02,implicit_praise,"Trời ơi ghét cái shop này dã man, áo gì mà mặc lên tôn dáng quá làm bạn bè hỏi mua suốt mệt hết cả người!",POS,NEG,NEG,NEU
+PRAISE_03,implicit_praise,"Chưa bao giờ thấy cái quần nào kỳ cục vậy, giặt chục lần rồi mà không xù không phai màu chút nào, bó tay!",POS,NEG,NEG,NEU
+PRAISE_04,implicit_praise,"Không thể tin nổi với cái giá bèo nhèo này mà hàng xịn không khác gì hàng hiệu, làm mất công đi mua ngoài tiệm trước giờ!",POS,NEG,POS,NEU
+PRAISE_05,implicit_praise,"Sợ hãi cái chất lượng này thật sự, giá sinh viên mà đường kim mũi chỉ khét lẹt không tìm nổi một cọng chỉ thừa!",POS,NEG,NEG,NEU
+TEENCODE_01,teencode_slang,"sp okela k chê đc j lun, ship nhah vkl, vải mềm mặc mát xỉu, mng chốt đơn gấp kẻo hết sz nha!!",POS,POS,POS,NEU
+TEENCODE_02,teencode_slang,"hang dep lem lun ak, moi toi ship hoi lau xiu nhg ma nhan dc do rui thi het nuoc cham lun tks shoppp",POS,NEG,POS,NEU
+TEENCODE_03,teencode_slang,"chất lg bth thui mn, vải hơi mỏng vs có chỉ thừa xíu, k quá tệ nhưng cx k xuất sắc lắm, tạm đc nha",NEU,NEG,NEU,NEU
+TEENCODE_04,teencode_slang,"sp cũng bth thui k có j đặc biệt, vải tạm đc nhg giao hàng hơi chậm xíu, vs giá này cx tạm ổn",NEU,NEU,NEU,NEU
+TEENCODE_05,teencode_slang,"shop lừa đảo vkl, qc hàng auth mà gửi toàn hàng fake lởm, nt hỏi k thèm rep, né gấp mn ơi!!",NEG,NEG,NEG,NEU
