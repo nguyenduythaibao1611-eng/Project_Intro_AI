@@ -116,7 +116,7 @@ jupyter notebook
 | **Nguyễn Duy Thái Bảo** | 24020015 | **Team Leader / Project Manager & DevOps** |
 | **Châu Tuấn Kiệt** | 240020010 | **Senior ML Engineer (Deep Learning & PhoBERT)** |
 | **Đặng Đức Minh** | 24020001 | **Data Engineer (Preprocessing & Teencode Pipeline)** |
-| **Bùi Đình Hiếu** | 24020006 | **AI/ML Engineer (Baseline TF-IDF & Experiments)** |
+| **Bùi Đình Hiếu** | 24040006 | **AI/ML Engineer (Baseline TF-IDF & Experiments)** |
 | **Từ Văn Huy Hoàng** | 2402009 | **Training & Evaluation Engineer (Metrics & Colab GPU)** |
 
 ---

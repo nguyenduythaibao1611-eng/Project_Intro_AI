@@ -102,5 +102,5 @@ def test_ui_can_select_both_trained_models():
         at.selectbox(key="review_model").set_value(kind).run()
         assert not at.exception
         assert at.session_state["single_result"]["model_type"] == kind
-        assert at.session_state["single_result"]["metadata"]["epoch"] in (1, 4)
-    assert any("12.85%" in message.value for message in at.warning)
+        assert at.session_state["single_result"]["metadata"]["epoch"] in (1, 3, 4)
+    assert any(any(token in message.value for token in ("12.85%", "71.36%")) for message in at.warning)

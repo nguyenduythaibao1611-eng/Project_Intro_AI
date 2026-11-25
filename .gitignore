@@ -60,3 +60,20 @@ trained_models/
 /data/processed/excluded_rows.csv
 /data/processed/preprocessing_audit.json
 /docs/MINH_WEEK3_PREPROCESSING_REPORT.md
+
+# Temporary and incomplete download files
+*.crdownload
+*.part
+*.tmp
+
+# Large video demo files (submitted separately via Google Drive link)
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+
+# Heavy presentation decks (submitted separately via Google Drive folder '01_Slides_Every_Week')
+*.pptx
+docs/Canva_*.pdf
+docs/Canva_*.pptx
